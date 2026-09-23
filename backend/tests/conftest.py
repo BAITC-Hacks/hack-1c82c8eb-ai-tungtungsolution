@@ -29,6 +29,9 @@ def configured_backend(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("DATABASE_URL", "postgresql://test:test@127.0.0.1:1/test")
     monkeypatch.setenv("OPENAI_API_KEY", "unit-test-key")
     monkeypatch.setenv("OPENAI_MODEL", "unit-test-model")
+    monkeypatch.setenv(
+        "SESSION_SECRET", "unit-test-secret-that-is-at-least-32-characters"
+    )
 
 
 @pytest.fixture

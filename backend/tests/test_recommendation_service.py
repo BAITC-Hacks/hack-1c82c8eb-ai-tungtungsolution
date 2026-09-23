@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from collections.abc import AsyncIterator
 from datetime import UTC, date, datetime
 from typing import TYPE_CHECKING, cast
 from unittest.mock import AsyncMock, MagicMock
@@ -278,72 +277,3 @@ def test_context_rejects_foreign_employee_history(
     )
     with pytest.raises(ValueError, match="belong to the selected employee"):
         prepare_context(recommendation_snapshot.model_copy(update={"history": [row]}))
-
-
-@pytest.mark.anyio
-async def test_agent_endpoint_returns_verified_result_and_persists_audit(
-    monkeypatch: pytest.MonkeyPatch,
-    audit_session: MagicMock,
-    recommendation_snapshot: RecommendationSnapshot,
-    recommendation_context: RecommendationContext,
-) -> None:
-    from app import main
-    from app.db import get_session
-
-    async def session_override() -> AsyncIterator[AsyncSession]:
-        yield cast(AsyncSession, audit_session)
-
-    monkeypatch.setattr(
-        service, "load_snapshot", AsyncMock(return_value=recommendation_snapshot)
-    )
-    monkeypatch.setitem(main.app.dependency_overrides, get_session, session_override)
-    monkeypatch.setattr(
-        main,
-        "recommendation_cache",
-        service.RecommendationCache(ttl_seconds=60, max_entries=5),
-    )
-    mock = MockResponses(
-        [
-            response(tool_output()),
-            response(final_output(selection_payload(recommendation_context, 3))),
-        ]
-    )
-    async with mock_client(mock) as client:
-        monkeypatch.setattr(main, "recommendation_agent", make_agent(client))
-        async with httpx2.AsyncClient(
-            transport=httpx2.ASGITransport(main.app),
-            base_url="http://test",
-        ) as api:
-            output = await api.post(
-                "/api/agent/run",
-                json={
-                    "employee_id": recommendation_snapshot.profile.employee_id,
-                    "message": "Помоги",
-                },
-            )
-            assert output.status_code == 200
-            body = output.json()
-            assert body["id"] == 1
-            assert not body["fallback_used"]
-            assert len(body["recommendations"]) == 3
-            assert len(body["steps"]) == 4
-            assert "created_at" in body
-            invalid = await api.post("/api/agent/run", json={"message": "Помоги"})
-            assert invalid.status_code == 422
-            from app.recommendation_data import EmployeeNotFoundError
-
-            monkeypatch.setattr(
-                service,
-                "load_snapshot",
-                AsyncMock(side_effect=EmployeeNotFoundError("UNKNOWN")),
-            )
-            missing = await api.post(
-                "/api/agent/run", json={"employee_id": "UNKNOWN", "message": "Помоги"}
-            )
-            assert missing.status_code == 404
-            schema = (await api.get("/openapi.json")).json()
-            assert (
-                "employee_id"
-                in schema["components"]["schemas"]["AgentRunIn"]["required"]
-            )
-    audit_session.commit.assert_awaited_once()

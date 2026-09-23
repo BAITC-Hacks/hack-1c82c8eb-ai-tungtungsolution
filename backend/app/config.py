@@ -13,6 +13,9 @@ class Settings(BaseSettings):
     agent_max_rounds: int = Field(default=4, ge=1, le=4)
     recommendation_cache_ttl_seconds: float = Field(default=300, gt=0)
     recommendation_cache_max_entries: int = Field(default=256, ge=1)
+    session_secret: str = Field(min_length=32)
+    session_max_age_seconds: int = Field(default=28800, ge=300)
+    session_cookie_secure: bool = False
 
 
 settings = Settings()  # pyright: ignore[reportCallIssue]
