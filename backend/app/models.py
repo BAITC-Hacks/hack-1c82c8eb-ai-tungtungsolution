@@ -1,4 +1,5 @@
-from datetime import date, datetime
+from datetime import date as DateValue
+from datetime import datetime
 
 from sqlalchemy import (
     CheckConstraint,
@@ -50,7 +51,7 @@ class DatasetMetadata(Base):
     source_filename: Mapped[str] = mapped_column(Text, primary_key=True)
     dataset: Mapped[str] = mapped_column(Text)
     version: Mapped[str] = mapped_column(Text)
-    as_of_date: Mapped[date]
+    as_of_date: Mapped[DateValue]
     proficiency_scale: Mapped[dict[str, str] | None] = mapped_column(
         JSONB(none_as_null=True)
     )
@@ -105,12 +106,12 @@ class Employee(Base):
         Text,
         ForeignKey("employees.employee_id", deferrable=True, initially="DEFERRED"),
     )
-    hire_date: Mapped[date]
+    hire_date: Mapped[DateValue]
     tenure_months: Mapped[int]
     work_format: Mapped[str] = mapped_column(Text)
     preferred_language: Mapped[str] = mapped_column(Text)
     career_goal: Mapped[dict[str, str] | None] = mapped_column(JSONB(none_as_null=True))
-    last_review_date: Mapped[date]
+    last_review_date: Mapped[DateValue]
 
 
 class Skill(Base):
@@ -189,7 +190,7 @@ class Event(Base):
     target_roles: Mapped[list[str]] = mapped_column(ARRAY(Text))
     target_grades: Mapped[list[str]] = mapped_column(ARRAY(Text))
     prerequisites: Mapped[dict[str, int]] = mapped_column(JSONB)
-    upcoming_sessions: Mapped[list[date]] = mapped_column(ARRAY(Date))
+    upcoming_sessions: Mapped[list[DateValue]] = mapped_column(ARRAY(Date))
 
 
 class EventSkill(Base):
@@ -238,8 +239,8 @@ class ActivityHistory(Base):
     event_id: Mapped[str] = mapped_column(
         Text, ForeignKey("events.event_id"), index=True
     )
-    date: Mapped[date]
-    due_date: Mapped[date | None]
+    date: Mapped[DateValue]
+    due_date: Mapped[DateValue | None]
     status: Mapped[str] = mapped_column(Text)
     completion_pct: Mapped[int] = mapped_column(SmallInteger)
     score: Mapped[int | None] = mapped_column(SmallInteger)

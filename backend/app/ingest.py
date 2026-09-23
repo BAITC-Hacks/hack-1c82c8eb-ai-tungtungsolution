@@ -3,7 +3,7 @@ import io
 import json
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
-from datetime import date
+from datetime import date as DateValue
 from itertools import pairwise
 from pathlib import Path
 from typing import Literal, cast
@@ -51,7 +51,7 @@ class InputModel(BaseModel):
 class DatasetMeta(InputModel):
     dataset: str
     version: str
-    as_of_date: date
+    as_of_date: DateValue
 
 
 class CareerGoal(InputModel):
@@ -66,13 +66,13 @@ class EmployeeRecord(InputModel):
     role: str
     grade: Literal["Junior", "Middle", "Senior", "Lead"]
     manager_id: str | None
-    hire_date: date
+    hire_date: DateValue
     tenure_months: int = Field(ge=0)
     work_format: Literal["office", "hybrid", "remote"]
     preferred_language: Literal["kk", "ru", "en"]
     career_goal: CareerGoal | None
     skills: dict[str, int]
-    last_review_date: date
+    last_review_date: DateValue
 
     @field_validator("skills")
     @classmethod
@@ -130,7 +130,7 @@ class EventRecord(InputModel):
     target_grades: list[Literal["Junior", "Middle", "Senior", "Lead"]]
     develops_skills: list[EventSkillRecord]
     prerequisites: dict[str, int]
-    upcoming_sessions: list[date]
+    upcoming_sessions: list[DateValue]
 
     @field_validator("prerequisites")
     @classmethod
@@ -144,8 +144,8 @@ class HistoryRecord(InputModel):
     record_id: str
     employee_id: str
     event_id: str
-    date: date
-    due_date: date | None
+    date: DateValue
+    due_date: DateValue | None
     status: Literal[
         "completed", "in_progress", "dropped", "no_show", "declined", "overdue"
     ]
