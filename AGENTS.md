@@ -1,4 +1,4 @@
-# Kazakhtelecom track — hackathon project
+# Halyk Bank / Career Quest — hackathon project
 
 ## Context
 - Case, rubric, mentor answers, data description: docs/case.md
