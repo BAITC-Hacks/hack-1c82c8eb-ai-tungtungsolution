@@ -1,0 +1,19 @@
+services:
+  db:
+    image: postgres:18
+    environment:
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: app
+      POSTGRES_DB: app
+    ports:
+      - "5433:5432"  # host 5433 avoids clashing with a locally installed Postgres on 5432
+    volumes:
+      - pgdata:/var/lib/postgresql  # Postgres 18+ mount path; the old /var/lib/postgresql/data breaks
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U app -d app"]
+      interval: 2s
+      timeout: 3s
+      retries: 15
+
+volumes:
+  pgdata:
