@@ -1,0 +1,8 @@
+.git
+**/node_modules
+**/.venv
+**/.env
+**/__pycache__
+**/.ruff_cache
+frontend/dist
+frontend/test-results
